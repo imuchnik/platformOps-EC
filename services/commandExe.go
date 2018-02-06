@@ -21,7 +21,7 @@ func Execute(outputBuffer *bytes.Buffer, stack []*exec.Cmd) (errorOutput string)
 	stack[i].Stdout = outputBuffer
 	stack[i].Stderr = &errorBuffer
 	if err := call(stack, pipeStack); err != nil {
-		fmt.Println ("Encounter Error", string(errorBuffer.Bytes()), err)
+		fmt.Println ("Encountered Error", string(errorBuffer.Bytes()), err)
 	}
 	return string(errorBuffer.Bytes())
 }
