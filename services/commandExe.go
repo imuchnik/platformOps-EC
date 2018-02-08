@@ -23,7 +23,8 @@ func Execute(outputBuffer *bytes.Buffer, stack []*exec.Cmd) (errorOutput string)
 	if err := call(stack, pipeStack); err != nil {
 		fmt.Println ("Encountered Error", string(errorBuffer.Bytes()), err)
 	}
-	return string(errorBuffer.Bytes())
+	errorOutput= string(errorBuffer.Bytes())
+	return
 }
 
 func call(stack []*exec.Cmd, pipes []*io.PipeWriter) (err error) {

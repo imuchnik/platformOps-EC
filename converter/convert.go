@@ -1,7 +1,6 @@
 package converter
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"platformOps-EC/services"
@@ -12,8 +11,8 @@ import (
 	"io/ioutil"
 	"encoding/json"
 )
-var excelFileName, output string
-var excelFileName, configFile string
+var excelFileName, output, configFile string
+
 
 
 type Config struct {
@@ -68,7 +67,7 @@ func getConfig(configFile string) Config {
 }
 
 
-func ToJson()  {
+func ToJson(excelFileName string, output string)  {
 
 
 
@@ -162,14 +161,3 @@ func ToSql() {
 	//services.ReadControlByBaselineId(db, baseline_id)
 	fmt.Println("Done inserting Baseline and Controls.  Check DB")
 }
- func main(){
-
-	 flag.StringVar(&excelFileName, "i", "", "Input Excel baseline file. If missing, program will exit.")
-	 flag.StringVar(&output, "o", "manifest.json", "Execution output location.")
-
-	 flag.StringVar(&excelFileName, "i", "", "Input excel baseline file. If missing, program will exit.")
-	 flag.StringVar(&configFile, "c", "", "Configuration file. If missing, program will exit.")
-
-	 flag.Parse()
-
- }

@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"platformOps-EC/converter"
 	"platformOps-EC/models"
 	"platformOps-EC/services"
 	"strings"
@@ -20,17 +21,22 @@ import (
 This is a av evidence collection agent:
 
 Usage commands
+Commands:
+run - process manifest and execute commands
+toJson - parse excel spreadsheet to json format
 
-- i Input file
-- c configuration file
+
+Options:
+-i Input file
+-c configuration file
 
 */
-
 
 var (
 	manifestResults []models.ECManifestResult
 	manifestErrors  []models.ECManifestResult
 )
+
 
 func getECManifest(manifest string) []models.ECManifest {
 	fmt.Printf("- Parsing manifest [%v]\n", manifest)
@@ -69,21 +75,16 @@ func executeCommands(baseline []models.ECManifest) {
 
 		errorOutput := services.Execute(&b, array)
 
-		/*if err != nil {
-			log.Fatalln(err)
-		}
-		*/
-
 		s := b.String()
 
 		resultManifest := models.ECManifestResult{
-			models.ECManifest{manifest.ReqId, manifest.Title, manifest.Command, manifest.Baseline},
+			models.ECManifest{manifest.ReqId,manifest.Title, manifest.Command, manifest.Baseline},
 			s,
 			dateTimeNow()}
 
 		manifestResults = append(manifestResults, resultManifest)
 
-		if errorOutput != "" {
+		if errorOutput!= "" {
 			errorManifest := models.ECManifestResult{
 				models.ECManifest{manifest.ReqId, manifest.Title, manifest.Command, manifest.Baseline},
 				errorOutput,
@@ -96,13 +97,23 @@ func executeCommands(baseline []models.ECManifest) {
 
 func main() {
 
-	fmt.Println("- Empowered by", models.ECVersion)
+	var input, output, command string
 
-	var input, output string
+	fmt.Println("- Empowered by", models.ECVersion)
 
 	flag.StringVar(&input, "i", "", "Input manifest json file. If missing, program will exit.")
 	flag.StringVar(&output, "o", "output.txt", "Execution output location.")
 	flag.Parse()
+
+	if len(flag.Args())>0{
+		command= flag.Args()[0]
+
+	}
+
+	fmt.Println("input:",input)
+	fmt.Println("output:",output)
+	fmt.Println("the rest:",flag.Args())
+
 
 	if input == "" {
 		fmt.Println("Missing input manifest. Program will exit.")
@@ -113,6 +124,24 @@ func main() {
 		fmt.Println("Default to output.txt")
 
 	}
+
+	switch command {
+	case "run":
+		processManifest(input, output)
+	case "toJson":
+		converter.ToJson(input, output)
+	default:
+		fmt.Errorf("No command was supplied")
+		os.Exit(1)
+	}
+
+
+}
+func processManifest(input string, output string) {
+
+	var manifestResults []models.ECManifestResult
+
+	var manifestErrors []models.ECManifestResult
 
 	baseline := getECManifest(input)
 	if len(baseline) < 1 {
@@ -159,6 +188,6 @@ func dateTimeNow() string {
 	return time.Now().Format("Mon Jan 2 15:04:05 MST 2006")
 }
 
-func getErrorFileName(output string) string {
+func getErrorFileName(output string) string{
 	return filepath.Join(filepath.Dir(output), "error_"+filepath.Base(output))
 }
