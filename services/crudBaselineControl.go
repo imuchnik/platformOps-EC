@@ -66,12 +66,12 @@ func readBaselineById(db *sql.DB, baselineId int) {
 func insertBaseline(db *sql.DB, baseline models.Baseline) (genId int) {
 	sqlStatement := "INSERT INTO baseline (name) VALUES ($1) RETURNING id"
 	id := 0
-	err := db.QueryRow(sqlStatement, baseline.GetName()).Scan(&id)
+	err := db.QueryRow(sqlStatement, baseline.Name).Scan(&id)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println("New record ID is:", id)
-	baseline.SetId(id)
+	baseline.Id=id
 	return id
 }
 
@@ -114,7 +114,7 @@ func insertControl(db *sql.DB, control models.Control) (genId int) {
 	if err != nil {
 		panic(err)
 	}
-	control.SetId(id)
+	control.Id=id
 	fmt.Println("New record ID is:", id)
 	return id
 }

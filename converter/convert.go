@@ -153,7 +153,7 @@ func ToSql() {
 
 	fmt.Println("Inserting controls")
 	for i := 0; i < len(controls); i++ {
-		controls[i].SetBaselineId(baseline_id)
+		controls[i].BaselineId=baseline_id
 		services.InsertControl(db, controls[i])
 
 	}

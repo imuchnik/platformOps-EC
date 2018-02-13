@@ -37,7 +37,6 @@ var (
 	manifestErrors  []models.ECManifestResult
 )
 
-
 func getECManifest(manifest string) []models.ECManifest {
 	fmt.Printf("- Parsing manifest [%v]\n", manifest)
 	raw, err := ioutil.ReadFile(manifest)
@@ -78,13 +77,13 @@ func executeCommands(baseline []models.ECManifest) {
 		s := b.String()
 
 		resultManifest := models.ECManifestResult{
-			models.ECManifest{manifest.ReqId,manifest.Title, manifest.Command, manifest.Baseline},
+			models.ECManifest{manifest.ReqId, manifest.Title, manifest.Command, manifest.Baseline},
 			s,
 			dateTimeNow()}
 
 		manifestResults = append(manifestResults, resultManifest)
 
-		if errorOutput!= "" {
+		if errorOutput != "" {
 			errorManifest := models.ECManifestResult{
 				models.ECManifest{manifest.ReqId, manifest.Title, manifest.Command, manifest.Baseline},
 				errorOutput,
@@ -105,15 +104,10 @@ func main() {
 	flag.StringVar(&output, "o", "output.txt", "Execution output location.")
 	flag.Parse()
 
-	if len(flag.Args())>0{
-		command= flag.Args()[0]
+	if len(flag.Args()) > 0 {
+		command = flag.Args()[0]
 
 	}
-
-	fmt.Println("input:",input)
-	fmt.Println("output:",output)
-	fmt.Println("the rest:",flag.Args())
-
 
 	if input == "" {
 		fmt.Println("Missing input manifest. Program will exit.")
@@ -134,7 +128,6 @@ func main() {
 		fmt.Errorf("No command was supplied")
 		os.Exit(1)
 	}
-
 
 }
 func processManifest(input string, output string) {
@@ -188,6 +181,6 @@ func dateTimeNow() string {
 	return time.Now().Format("Mon Jan 2 15:04:05 MST 2006")
 }
 
-func getErrorFileName(output string) string{
+func getErrorFileName(output string) string {
 	return filepath.Join(filepath.Dir(output), "error_"+filepath.Base(output))
 }
