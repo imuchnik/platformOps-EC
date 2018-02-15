@@ -1,27 +1,0 @@
-
-##################################
-Req Id:   2
-Title:    Title 2
-Baseline: Baseline 2
-Date Exc: Wed Feb 7 23:56:27 UTC 2018
-Command:  ls /Users/nguyenp/Downloads | grep gz | sort -r
-Version:  ec_agent v.1.1.2
-##################################
-
-ls: cannot access /Users/nguyenp/Downloads: No such file or directory
-
-
-##################################
-Req Id:   5
-Title:    Title 5
-Baseline: Baseline 5  
- will get 301 response code
-Date Exc: Wed Feb 7 23:56:28 UTC 2018
-Command:  curl http://google.com
-Version:  ec_agent v.1.1.2
-##################################
-
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   219  100   219    0     0    715      0 --:--:-- --:--:-- --:--:--   715100   219  100   219    0     0    715      0 --:--:-- --:--:-- --:--:--   715
-

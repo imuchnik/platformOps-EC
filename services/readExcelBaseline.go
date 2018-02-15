@@ -65,19 +65,25 @@ func loadControl(file string) (controls []models.Control) {
 	length := len(sheet.Rows)
 
 	// Removing header in excel sheet
+	//Parsing the correct indexes
 	startrow, reqIdInd, CategoryInd, RequirementsInd, DiscussionInd, CheckTextInd, FixTextInd := parseHeaders(sheet)
-	rows := sheet.Rows[startrow : length-1]
 
-	for _, row := range rows {
+	rows := sheet.Rows[startrow+1 : length-1]
+	for i, row := range rows {
 
 		cells := row.Cells
-		fmt.Printf("about to read %v\n", cells[0])
 
 		reqId, err := cells[reqIdInd].Int()
-		fmt.Printf("my ReqId %v\n", cells[0])
+
+		if reqId== -1{
+			fmt.Printf("Finished reading the file, loaded %d lines\n",i )
+			break
+		}
+
 		if err != nil {
-			fmt.Println("error reading reqId")
-			//fmt.Println(err)
+
+			fmt.Printf("error reading reqId on row %d\n",i )
+			break
 		}
 
 		//Need to dynamically determine the ones we need
@@ -94,7 +100,6 @@ func loadControl(file string) (controls []models.Control) {
 
 
 		controls = append(controls, control)
-		fmt.Println("appended", control.ReqId)
 	}
 
 	return controls
