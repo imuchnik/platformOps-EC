@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -29,6 +30,7 @@ toJson - parse excel spreadsheet to json format
 Options:
 -i Input file
 -c configuration file
+-m mode
 
 */
 
@@ -51,6 +53,30 @@ func getECManifest(manifest string) []models.ECManifest {
 		fmt.Println("error parsing json input", err)
 	}
 	return c
+}
+
+func getJsonManifestFromMaster(url string) []models.ECManifest {
+
+	var myClient = &http.Client{Timeout: 10 * time.Second}
+
+	resp, err := myClient.Get(url)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	//decoder := json.NewDecoder(resp.Body)
+	//fmt.Println(decoder.Decode(&baseline))
+
+	body, err := ioutil.ReadAll(resp.Body)
+
+	var baseline []models.ECManifest
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	json.Unmarshal(body, &baseline)
+	return baseline
 }
 
 func executeCommands(baseline []models.ECManifest) {
@@ -93,68 +119,6 @@ func executeCommands(baseline []models.ECManifest) {
 	}
 
 }
-
-func main() {
-
-	var input, output, command string
-
-	fmt.Println("- Empowered by", models.ECVersion)
-
-	flag.StringVar(&input, "i", "", "Input manifest json file. If missing, program will exit.")
-	flag.StringVar(&output, "o", "output.txt", "Execution output location.")
-	flag.Parse()
-
-	if len(flag.Args()) > 0 {
-		command = flag.Args()[0]
-
-	}
-
-	if input == "" {
-		fmt.Println("Missing input manifest. Program will exit.")
-		os.Exit(1)
-	}
-
-	if output == "output.txt" {
-		fmt.Println("Default to output.txt")
-
-	}
-
-	switch command {
-	case "run":
-		processManifest(input, output)
-	case "toJson":
-		converter.ToJson(input, output)
-	default:
-		fmt.Errorf("No command was supplied")
-		os.Exit(1)
-	}
-
-}
-func processManifest(input string, output string) {
-
-	var manifestResults []models.ECManifestResult
-
-	var manifestErrors []models.ECManifestResult
-
-	baseline := getECManifest(input)
-	if len(baseline) < 1 {
-		os.Exit(1)
-	}
-
-	fmt.Println("- Start executing commands")
-
-	executeCommands(baseline)
-
-	writeToFile(manifestResults, output)
-	fmt.Printf("- Done writing to [%v]\n", output)
-
-	if len(manifestErrors) > 0 {
-		errorFile := getErrorFileName(output)
-		writeToFile(manifestErrors, errorFile)
-		fmt.Printf("- Done writing error to [%v]\n", errorFile)
-	}
-}
-
 func writeToFile(baseline []models.ECManifestResult, output string) {
 	hashString := "##################################"
 	file, err := os.Create(output)
@@ -174,7 +138,6 @@ func writeToFile(baseline []models.ECManifestResult, output string) {
 		fmt.Fprintf(file, "\n%v\n", hashString)
 		fmt.Fprintf(file, "\n%v\n", baseline[i].Output)
 	}
-
 }
 
 func dateTimeNow() string {
@@ -184,3 +147,74 @@ func dateTimeNow() string {
 func getErrorFileName(output string) string {
 	return filepath.Join(filepath.Dir(output), "error_"+filepath.Base(output))
 }
+
+
+func main() {
+
+	var input, output, command, mode string
+
+	fmt.Println("- Empowered by", models.ECVersion)
+
+	flag.StringVar(&input, "i", "", "Input manifest json file. If missing, program will exit.")
+	flag.StringVar(&output, "o", "output.txt", "Execution output location.")
+	flag.StringVar(&mode, "m", "local", "Run as Web agent or local CLI agent. -m w as Web agent. Default local CLI agent. ")
+
+	flag.Parse()
+
+	if len(flag.Args()) > 0 {
+		command = flag.Args()[0]
+
+	}
+
+	if input == "" {
+		fmt.Println("Missing input manifest. Program will exit.")
+		os.Exit(1)
+	}
+
+	if output == "output.txt" {
+		fmt.Println("Default to output.txt")
+
+	}
+
+	switch command {
+	case "run":
+		processManifest(input, output, mode)
+	case "toJson":
+		converter.ToJson(input, output)
+	default:
+		fmt.Errorf("No command was supplied")
+		os.Exit(1)
+	}
+
+}
+func processManifest(input string, output string, mode string) ([]models.ECManifestResult, []models.ECManifestResult){
+
+	var manifestResults []models.ECManifestResult
+
+	var manifestErrors []models.ECManifestResult
+	var baseline []models.ECManifest
+
+	if mode == "local" {
+		baseline = getECManifest(input)
+	} else {
+		baseline = getJsonManifestFromMaster(input)
+	}
+	if len(baseline) < 1 {
+		os.Exit(1)
+	}
+
+	fmt.Println("- Start executing commands")
+
+	executeCommands(baseline)
+
+	writeToFile(manifestResults, output)
+	fmt.Printf("- Done writing to [%v]\n", output)
+
+	if len(manifestErrors) > 0 {
+		errorFile := getErrorFileName(output)
+		writeToFile(manifestErrors, errorFile)
+		fmt.Printf("- Done writing error to [%v]\n", errorFile)
+	}
+	return manifestResults, manifestErrors
+}
+
