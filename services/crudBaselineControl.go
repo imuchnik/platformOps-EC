@@ -105,7 +105,7 @@ func GetManifestByBaselineId(db *sql.DB, baselineId int) []models.ECManifest {
 		}
 
 		commands := GetCommandByControlId(db, controlId)
-		manifest :=  models.ECManifest{reqId, category, getCommandStringArray(commands), baselineName}
+		manifest :=  models.ECManifest{reqId, category, getCommandStringArray(commands), "", "", "", baselineName, }
 		manifests = append(manifests, manifest)
 	}
 	if err := rows.Err(); err != nil {

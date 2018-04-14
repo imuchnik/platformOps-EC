@@ -3,37 +3,44 @@
     "reqId": 1,
     "title": "Title 1",
     "command": ["docker version"],
+    "commandType": "cmd",
     "baseline": "Baseline 1"
   },
   {
     "reqId": 2,
     "title": "Title 2",
     "command": ["ls /Users/nguyenp/Downloads | grep gz | sort -r"],
+    "commandType": "cmd",
     "baseline": "Baseline 2"
   },
   {
     "reqId": 3,
     "title": "Title 3",
     "command": ["javah -version"],
+    "commandType": "cmd",
     "baseline": "Baseline 3"
   },
   {
     "reqId": 4,
     "title": "Title 4",
     "command": ["ps -ef | grep virtualbox | grep 123456"],
+    "commandType": "cmd",
     "baseline": "Baseline 4"
   },
   {
     "reqId": 5,
     "title": "Title 5",
     "command": ["curl http://google.com"],
+    "commandType": "cmd",
     "baseline": "Baseline 5  \n will get 301 response code"
   },
-
   {
     "reqId": 6,
     "title": "Title 5",
-    "command": "man hello",
+    "command": "",
+    "commandType": "screenshot",
+    "targetUrl": "https://consumerfinance.gov",
+    "destinationPath": ".",
     "baseline": "should error out"
   }
 ]

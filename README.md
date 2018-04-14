@@ -43,6 +43,7 @@ evidence from a set of baselines.
 
 - github.com/tealeg/xlsx - Excel parser
 - github.com/lib/pq - PostgreSQL Go driver
+- https://github.com/sensepost/gowitness - gowitness, a commandline Go tool for screen capture.
 
 ## Configuration
 

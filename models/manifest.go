@@ -12,6 +12,9 @@ type ECManifest struct {
 	Title    string 	`json:"title"`
 	Command  []string	`json:"command"`
 	Baseline string 	`json:"baseline"`
+	CommandType string 	`json:"commandType"`
+	TargetUrl string	`json:"targetUrl"`
+	DestinationPath string	`json:"destinationPath"`
 }
 
 type ECManifestResult struct {
