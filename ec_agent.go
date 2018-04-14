@@ -5,10 +5,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/BurntSushi/toml"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"os/exec"
 	"path"
@@ -17,7 +15,7 @@ import (
 	"platformOps-EC/models"
 	"platformOps-EC/services"
 	"strings"
-	"time"
+	"github.com/BurntSushi/toml"
 )
 
 /*
@@ -51,29 +49,12 @@ func getECManifest(manifest string) []models.ECManifest {
 	return c
 }
 
+
 func getJsonManifestFromMaster(url string) []models.ECManifest {
 
-	var myClient = &http.Client{Timeout: 10 * time.Second}
-
-	resp, err := myClient.Get(url)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-
-	var baseline []models.ECManifest
-
-	if err != nil {
-		panic(err.Error())
-	}
-
-	json.Unmarshal(body, &baseline)
-	return baseline
+	return services.GetManifestFromMaster(url)
 }
-
-func loadConfigIntoSession(configFile string) map[string]string {
+func loadConfig(configFile string) map[string]string {
 	fmt.Printf("- Loading configs [%v]\n", configFile)
 
 	var config map[string]string
@@ -120,7 +101,7 @@ func CollectEvidence(baseline []models.ECManifest) []models.ECResult {
 					s := strings.TrimSpace(result[i])
 					commands := strings.Split(s, " ")
 					args := commands[1:]
-					wrapperForEnv(args)
+					services.WrapperCliVarsToEnvVars(args)
 					array[i] = exec.Command(commands[0], args...)
 				}
 				errorOutput := services.Execute(&b, array)
@@ -131,7 +112,9 @@ func CollectEvidence(baseline []models.ECManifest) []models.ECResult {
 			}
 		}
 		resultManifest := models.ECResult{
-			models.ECManifest{manifest.ReqId, manifest.Title, manifest.Command,"","","",  manifest.Baseline},
+
+			models.ECManifest{manifest.ReqId, manifest.Title, manifest.Command,"","","",  manifest.Baseline, "",""},
+
 			services.GetHostNameExec(),
 			resultOutputs,
 			errorOutputs,
@@ -141,16 +124,6 @@ func CollectEvidence(baseline []models.ECManifest) []models.ECResult {
 
 	}
 	return ecResults
-}
-
-func wrapperForEnv(args []string) {
-
-	for k := range args {
-		if strings.Contains(args[k], "$") {
-			args[k] = os.ExpandEnv(args[k])
-		}
-	}
-
 }
 
 func writeToFile(baseline []models.ECResult, output string, resultType string, isJson bool) {
@@ -171,7 +144,8 @@ func writeToFile(baseline []models.ECResult, output string, resultType string, i
 			fmt.Fprintf(file, "\nVersion:  %v", models.ECVersion)
 			fmt.Fprintf(file, "\nReq Id:   %v", baseline[i].ReqId)
 			fmt.Fprintf(file, "\nTitle:    %v", baseline[i].Title)
-			fmt.Fprintf(file, "\nBaseline: %v", baseline[i].Baseline)
+			fmt.Fprintf(file, "\nBaseline: %v", baseline[i].BaselineUid)
+			fmt.Fprintf(file, "\nControl: %v", baseline[i].ControlUid)
 			fmt.Fprintf(file, "\nDate Exc: %v", baseline[i].DateExe)
 			fmt.Fprintf(file, "\nHost Exc: %v", baseline[i].HostExec)
 			fmt.Fprintf(file, "\n%v:", "Command")
@@ -221,7 +195,8 @@ func main() {
 
 	flag.Parse()
 
-	env := loadConfigIntoSession(config)
+	env := services.LoadConfig(config)
+
 	defer func() {
 		os.Clearenv()
 		for k, _ := range env {

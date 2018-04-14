@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -15,6 +16,8 @@ type ECManifest struct {
 	CommandType string 	`json:"commandType"`
 	TargetUrl string	`json:"targetUrl"`
 	DestinationPath string	`json:"destinationPath"`
+	BaselineUid string   `json:"baseline"`
+	ControlUid  string   `json:"control"`
 }
 
 type ECManifestResult struct {
@@ -25,10 +28,19 @@ type ECManifestResult struct {
 
 type ECResult struct {
 	ECManifest
-	HostExec		string `json:"host"`
-	StdOutput		[]string `json:"stdOutput"`
-	StdErrOutput	[]string `json:"stdErrOutput"`
-	DateExe			string `json:"dateExe"`
+	HostExec     string   `json:"host"`
+	StdOutput    []string `json:"stdOutput"`
+	StdErrOutput []string `json:"stdErrOutput"`
+	DateExe      string   `json:"dateExe"`
+}
+
+type BatchSubmision struct {
+	Id           int
+	BatchUid     string `json:"batchUid"`
+	DateSubmit   string `json:"dateSubmit"`
+	TimeSubmit   string `json:"timeSubmit"`
+	UserSubmit   string `json:"userSubmit"`
+	ResultSubmit []ECResult
 }
 
 func (p ECManifest) ToString() string {
@@ -43,4 +55,15 @@ func ToJson(p interface{}) string {
 	}
 
 	return string(bytes)
+}
+
+func ToObject(jsonStr string, p interface{}) {
+
+	raw := []byte(jsonStr)
+	err := json.Unmarshal(raw, &p)
+
+	if err != nil {
+		log.Printf("Error converting json string to object %v", err)
+	}
+
 }
